@@ -62,27 +62,27 @@ class Trainer():
 
 
 if __name__ == "__main__":
-    # get data - store the data in a DataFrame
-    df = get_data()
+    # # get data - store the data in a DataFrame
+    # df = get_data()
 
-    # clean data
-    df = clean_data(df)
+    # # clean data
+    # df = clean_data(df)
 
-    # set X and y
-    y = df["fare_amount"]
-    X = df.drop("fare_amount", axis=1)
+    # # set X and y
+    # y = df["fare_amount"]
+    # X = df.drop("fare_amount", axis=1)
 
-    # hold out
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.15)
+    # # hold out
+    # X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.15)
 
-    trainer = Trainer(X, y)
+    # trainer = Trainer(X, y)
 
-    # build pipeline
-    pipeline = trainer.set_pipeline()
+    # # build pipeline
+    # pipeline = trainer.set_pipeline()
 
-    # train the pipeline
-    trainer.run(X_train, y_train, pipeline)
+    # # train the pipeline
+    # trainer.run(X_train, y_train, pipeline)
 
-    # evaluate the pipeline
-    rmse = trainer.evaluate(X_val, y_val, pipeline)
-    print(rmse)
+    # # evaluate the pipeline
+    # rmse = trainer.evaluate(X_val, y_val, pipeline)
+    # print(rmse)

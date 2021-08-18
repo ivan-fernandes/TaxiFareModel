@@ -24,5 +24,17 @@ def clean_data(df, test=False):
     return df
 
 
+def holdout():
+    # create holdout method
+    # from sklearn.model_selection import train_test_split
+
+    # y_train = df["fare_amount"]
+    # X_train = df.drop("fare_amount", axis=1)
+
+    # X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.1)
+    pass
+
+
 if __name__ == '__main__':
     df = get_data()
+

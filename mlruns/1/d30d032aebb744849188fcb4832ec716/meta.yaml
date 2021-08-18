@@ -1,0 +1,15 @@
+artifact_uri: file:///home/ivanfernandes/code/ivan-fernandes/TaxiFareModel/mlruns/1/d30d032aebb744849188fcb4832ec716/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: d30d032aebb744849188fcb4832ec716
+run_uuid: d30d032aebb744849188fcb4832ec716
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1629207401168
+status: 1
+tags: []
+user_id: unknown

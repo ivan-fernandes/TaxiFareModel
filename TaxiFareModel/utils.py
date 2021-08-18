@@ -53,10 +53,20 @@ def haversine_distance(df,
     return haversine_distance
 
 
-def minkowski_distance(x1, x2, y1, y2, p):
+def minkowski_distance(df, p,
+                       start_lat="pickup_latitude",
+                       start_lon="pickup_longitude",
+                       end_lat="dropoff_latitude",
+                       end_lon="dropoff_longitude",
+                       ):
+    x1 = df[start_lon]
+    x2 = df[end_lon]
+    y1 = df[start_lat]
+    y2 = df[end_lat]
     delta_x = x1 - x2
     delta_y = y1 - y2
     return ((abs(delta_x) ** p) + (abs(delta_y)) ** p) ** (1 / p)
+
 
 def deg2rad(coordinate):
     return coordinate * np.pi / 180
@@ -71,6 +81,7 @@ def lng_dist_corrected(lng_dist, lat):
     return lng_dist * np.cos(lat)
 
 def minkowski_distance_gps(lat1, lat2, lon1, lon2, p):
+
     lat1, lat2, lon1, lon2 = [deg2rad(coordinate) for coordinate in [lat1, lat2, lon1, lon2]]
     y1, y2, x1, x2 = [rad2dist(angle) for angle in [lat1, lat2, lon1, lon2]]
     x1, x2 = [lng_dist_corrected(elt['x'], elt['lat']) for elt in [{'x': x1, 'lat': lat1}, {'x': x2, 'lat': lat2}]]

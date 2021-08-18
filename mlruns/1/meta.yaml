@@ -1,0 +1,4 @@
+artifact_location: file:///home/ivanfernandes/code/ivan-fernandes/TaxiFareModel/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: taxi_fare_prediction

@@ -1,5 +1,5 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from TaxiFareModel.utils import haversine_vectorized
+from TaxiFareModel.utils import haversine_vectorized, minkowski_distance
 
 
 import pandas as pd
@@ -36,7 +36,7 @@ class DistanceTransformer(BaseEstimator, TransformerMixin):
         Returns a copy of the DataFrame X with only one column: 'distance'.
     """
 
-    def __init__(self,
+    def __init__(self, distance_type="euclidian",
                  start_lat="pickup_latitude",
                  start_lon="pickup_longitude",
                  end_lat="dropoff_latitude",
@@ -45,6 +45,7 @@ class DistanceTransformer(BaseEstimator, TransformerMixin):
         self.start_lon = start_lon
         self.end_lat = end_lat
         self.end_lon = end_lon
+        self.distance_type = distance_type
 
     def fit(self, X, y=None):
         return self
@@ -52,11 +53,18 @@ class DistanceTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         assert isinstance(X, pd.DataFrame)
         X_ = X.copy()
-        X_["distance"] = haversine_vectorized(
+        
+
+        if self.distance_type == "euclidian":
+            X["distance"] = minkowski_distance(X, p=2)
+        if self.distance_type == "manhattan":
+            X["distance"] = minkowski_distance(X, p=1)
+        if self.distance_type == "haversine":
+            X_["distance"] = haversine_vectorized(
             X_,
             start_lat=self.start_lat,
             start_lon=self.start_lon,
             end_lat=self.end_lat,
             end_lon=self.end_lon
-        )
-        return X_[['distance']]
+        )           
+        return X[["distance"]]

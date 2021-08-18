@@ -22,14 +22,17 @@ from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from termcolor import colored
 from xgboost import XGBRegressor
+from google.cloud import storage
+from TaxiFareModel.gcp import storage_upload
 
-MODEL_DIRECTY = "PipelineTest"  # must the same as PATH_TO_MODEL inside Makefile
+MODEL_DIRECTY = "/home/ivanfernandes/code/ivan-fernandes/TaxiFareModel/"  # must the same as PATH_TO_MODEL inside Makefile
 MLFLOW_URI = "https://mlflow.lewagon.co/"
+BUCKET_NAME="wagon-data-672-fernandes"
 
 
 class Trainer(object):
     ESTIMATOR = "Linear"
-    EXPERIMENT_NAME = "TaxifareModel"
+    EXPERIMENT_NAME = "[DE] [BER] [ivan-fernandes] taxifare 2"
 
     def __init__(self, X, y, **kwargs):
         """
@@ -114,7 +117,7 @@ class Trainer(object):
             ('direction', pipe_direction, list(DIST_ARGS.values())),
             ('distance_to_center', pipe_distance_to_center, list(DIST_ARGS.values())),
         ]
-        # Filter out some bocks according to input parameters
+        # Filter out some blocks according to input parameters
         for bloc in feateng_blocks:
             if bloc[0] not in feateng_steps:
                 feateng_blocks.remove(bloc)
@@ -158,6 +161,9 @@ class Trainer(object):
     def save_model(self):
         """Save the model into a .joblib format"""
         joblib.dump(self.pipeline, 'model.joblib')
+        storage_upload("TaxiFare")
+
+
         print(colored("model.joblib saved locally", "green"))
 
     ### MLFlow methods
@@ -208,11 +214,11 @@ class Trainer(object):
 if __name__ == "__main__":
     warnings.simplefilter(action='ignore', category=FutureWarning)
     # Get and clean data
-    experiment = "taxifare_set_YOURNAME"
+    experiment = "[DE] [BER] [ivan-fernandes] taxifare 2"
     if "YOURNAME" in experiment:
         print(colored("Please define MlFlow experiment variable with your own name", "red"))
     params = dict(nrows=1000000,
-                  local=False,  # set to False to get data from GCP (Storage or BigQuery)
+                  local=True,  # set to False to get data from GCP (Storage or BigQuery)
                   optimize=True,
                   estimator="xgboost",
                   mlflow=True,  # set to True to log params to mlflow

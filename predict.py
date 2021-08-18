@@ -39,7 +39,7 @@ def evaluate_model(y, y_pred):
 
 
 def generate_submission_csv(nrows, kaggle_upload=False):
-    df_test = get_test_data(nrows)
+    df_test = get_test_data(nrows, data="full")
     pipeline = joblib.load(PATH_TO_LOCAL_MODEL)
     if "best_estimator_" in dir(pipeline):
         y_pred = pipeline.best_estimator_.predict(df_test)

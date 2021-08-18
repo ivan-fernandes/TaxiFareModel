@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 
@@ -7,39 +9,10 @@ def haversine_vectorized(df,
                          end_lat="dropoff_latitude",
                          end_lon="dropoff_longitude"):
     """
-        Calculate the great circle distance between two points
+        Calculate the great circle distance between two points 
         on the earth (specified in decimal degrees).
         Vectorized version of the haversine distance for pandas df
         Computes distance in kms
-    """
-
-    lat_1_rad, lon_1_rad = np.radians(df[start_lat].astype(float)),\
-        np.radians(df[start_lon].astype(float))
-    lat_2_rad, lon_2_rad = np.radians(df[end_lat].astype(float)),\
-        np.radians(df[end_lon].astype(float))
-    dlon = lon_2_rad - lon_1_rad
-    dlat = lat_2_rad - lat_1_rad
-
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat_1_rad) * np.cos(lat_2_rad) *\
-        np.sin(dlon / 2.0) ** 2
-    c = 2 * np.arcsin(np.sqrt(a))
-    return 6371 * c
-
-
-def compute_rmse(y_pred, y_true):
-    return np.sqrt(((y_pred - y_true) ** 2).mean())
-
-
-def haversine_distance(df,
-                       start_lat="start_lat",
-                       start_lon="start_lon",
-                       end_lat="end_lat",
-                       end_lon="end_lon"):
-    """
-    Calculate the great circle distance between two points 
-    on the earth (specified in decimal degrees).
-    Vectorized version of the haversine distance for pandas df
-    Computes distance in kms
     """
 
     lat_1_rad, lon_1_rad = np.radians(df[start_lat].astype(float)), np.radians(df[start_lon].astype(float))
@@ -49,40 +22,39 @@ def haversine_distance(df,
 
     a = np.sin(dlat / 2.0) ** 2 + np.cos(lat_1_rad) * np.cos(lat_2_rad) * np.sin(dlon / 2.0) ** 2
     c = 2 * np.arcsin(np.sqrt(a))
-    haversine_distance = 6371 * c
-    return haversine_distance
+    return 6371 * c
 
 
 def minkowski_distance(df, p,
                        start_lat="pickup_latitude",
                        start_lon="pickup_longitude",
                        end_lat="dropoff_latitude",
-                       end_lon="dropoff_longitude",
-                       ):
+                       end_lon="dropoff_longitude"):
     x1 = df[start_lon]
     x2 = df[end_lon]
     y1 = df[start_lat]
     y2 = df[end_lat]
-    delta_x = x1 - x2
-    delta_y = y1 - y2
-    return ((abs(delta_x) ** p) + (abs(delta_y)) ** p) ** (1 / p)
+    return ((abs(x2 - x1) ** p) + (abs(y2 - y1)) ** p) ** (1 / p)
 
 
-def deg2rad(coordinate):
-    return coordinate * np.pi / 180
+def compute_rmse(y_pred, y_true):
+    return np.sqrt(((y_pred - y_true) ** 2).mean())
 
-# convert radians into distance
-def rad2dist(coordinate):
-    earth_radius = 6371 # km
-    return earth_radius * coordinate
 
-# correct the longitude distance regarding the latitude (https://jonisalonen.com/2014/computing-distance-between-coordinates-can-be-simple-and-fast/)
-def lng_dist_corrected(lng_dist, lat):
-    return lng_dist * np.cos(lat)
+################
+#  DECORATORS  #
+################
 
-def minkowski_distance_gps(lat1, lat2, lon1, lon2, p):
+def simple_time_tracker(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        if 'log_time' in kw:
+            name = kw.get('log_name', method.__name__.upper())
+            kw['log_time'][name] = int((te - ts))
+        else:
+            print(method.__name__, round(te - ts, 2))
+        return result
 
-    lat1, lat2, lon1, lon2 = [deg2rad(coordinate) for coordinate in [lat1, lat2, lon1, lon2]]
-    y1, y2, x1, x2 = [rad2dist(angle) for angle in [lat1, lat2, lon1, lon2]]
-    x1, x2 = [lng_dist_corrected(elt['x'], elt['lat']) for elt in [{'x': x1, 'lat': lat1}, {'x': x2, 'lat': lat2}]]
-    return minkowski_distance(x1, x2, y1, y2, p)
+    return timed

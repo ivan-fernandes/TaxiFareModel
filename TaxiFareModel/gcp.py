@@ -3,7 +3,7 @@ import os
 from google.cloud import storage
 from termcolor import colored
 
-BUCKET_NAME = "le-wagon-data"  # ⚠️ replace with your BUCKET NAME
+from TaxiFareModel.data import BUCKET_NAME
 
 
 def storage_upload(model_directory, bucket=BUCKET_NAME, rm=False):

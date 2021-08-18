@@ -1,45 +1,95 @@
+from taxifare.data import get_data, clean_df, holdout
+from taxifare.model import get_model
+from taxifare.pipeline import get_pipeline
+from taxifare.mlflow import MLFlowBase
+
 from sklearn.model_selection import GridSearchCV
-from sklearn.pipeline import Pipeline
 
-class ParamTrainer:
+import joblib
 
-    def __init__(self, X, y, pipeline):
-        self.pipeline = pipeline
-        self.X_train = X
-        self.y_train = y
+
+class ParamTrainer(MLFlowBase):
+
+    def __init__(self):
+        super().__init__(
+            "[DE] [BER] [ivan;fernandes] taxifare + 2",
+            "https://mlflow.lewagon.co")
 
     def train(self, params):
-        self.params = params
 
-        grid_search = GridSearchCV(
-        self.pipeline, 
-        param_grid={
-            'features__distance__standardscaler__copy': [True],
-            'model__min_samples_leaf': [3],
-            'model__oob_score': [True],
-            'model__min_weight_fraction_leaf': [0.0, 0.1]
-            },
-        cv=5)
+        # results
+        models = {}
 
-        grid_search.fit(self.X_train, self.y_train)
-        grid_search.score(self.X_test, self.y_test)
+        # iterate on models
+        for model_name, model_params in params.items():
+
+            line_count = model_params["line_count"]
+            hyper_params = model_params["hyper_params"]
+
+            # create a mlflow training
+            self.mlflow_create_run()
+
+            # log params
+            self.mlflow_log_param("model_name", model_name)
+            self.mlflow_log_param("line_count", line_count)
+            for key, value in hyper_params.items():
+                self.mlflow_log_param(key, value)
+
+            # get data
+            df = get_data(line_count)
+            df = clean_df(df)
+
+            # holdout
+            X_train, X_test, y_train, y_test = holdout(df)
+
+            # log params
+            self.mlflow_log_param("model", model_name)
+
+            # create model
+            model = get_model(model_name)
+
+            # create pipeline
+            pipeline = get_pipeline(model)
+
+            # create gridsearch object
+            grid_search = GridSearchCV(
+                pipeline,
+                param_grid=hyper_params,
+                cv=5)
+
+            # train with gridsearch
+            grid_search.fit(X_train, y_train)
+
+            # score gridsearch
+            score = grid_search.score(X_test, y_test)
+
+            # save the trained model
+            joblib.dump(pipeline, f"{model_name}.joblib")
+
+            # push metrics to mlflow
+            self.mlflow_log_metric("score", score)
+
+            # return the gridsearch in order to identify the best estimators and params
+            models[model_name] = grid_search
+
+        return models
 
 
-        params = dict(
-            random_forest = dict(
-                line_count = 1_000,
-                hyper_params = dict(
-                    features__distance__distancetransformer__distance_type = ["euclidian", "manhattan"],
-                    features__distance__standardscaler__with_mean = [True, False],
-                    model__max_depth = [1, 2, 3]
-                )
-            ),
-            linear_regression = dict(
-                line_count = 1_000,
-                hyper_params = dict(
-                    features__distance__distancetransformer__distance_type = ["euclidian", "manhattan"],
-                    features__distance__standardscaler__with_mean = [True, False],
-                    model__normalize = [True, False]
-                )
-            )
-        )
+# params = dict(
+#             random_forest = dict(
+#                 line_count = 1_000,
+#                 hyper_params = dict(
+#                     features__distance__distancetransformer__distance_type = ["euclidian", "manhattan"],
+#                     features__distance__standardscaler__with_mean = [True, False],
+#                     model__max_depth = [1, 2, 3]
+#                 )
+#             ),
+#             linear_regression = dict(
+#                 line_count = 1_000,
+#                 hyper_params = dict(
+#                     features__distance__distancetransformer__distance_type = ["euclidian", "manhattan"],
+#                     features__distance__standardscaler__with_mean = [True, False],
+#                     model__normalize = [True, False]
+#                 )
+#             )
+#         )
